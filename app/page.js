@@ -61,6 +61,71 @@ const snoozeExcuses = [
   "You look tired. Not physically. Emotionally. Rest your emotions. 😴",
 ];
 
+const brainrotVideos = [
+  {
+    title: "Brainrot clip 1",
+    url: "https://www.tiktok.com/@mrsahuur/video/7635267660724325639?q=brainrot&t=1777930197259",
+  },
+  {
+    title: "Brainrot clip 2",
+    url: "https://www.tiktok.com/@showmeurbankai/video/7635714768946449694?q=fruit%20ai%20innocent&t=1777930397078",
+  },
+  {
+    title: "Brainrot clip 3",
+    url: "https://www.tiktok.com/@gedagadigedagadayo/video/7395427862246935851?q=overstimulating%20brainrot&t=1777930635490",
+  },
+  {
+    title: "Brainrot clip 4",
+    url: "https://www.tiktok.com/@afahiyahcuyyyy._/video/7037829179471121690?q=rickroll&t=1777930833067",
+  },
+  {
+    title: "Brainrot clip 5",
+    url: "https://www.tiktok.com/@viralpick6/video/7635502933378993439?q=cute%20cat%20videos&t=1777931384341",
+  },
+  {
+    title: "Brainrot clip 6",
+    url: "https://www.tiktok.com/@1_hat3e_d4airy7/video/7629550823739002125?q=5%20min%20crafts%20sped%20up&t=1777931421627",
+  },
+  {
+    title: "Brainrot clip 7",
+    url: "https://www.tiktok.com/@kung_fu_grandpa/video/7288131843193408811?q=building%20in%20the%20forest%20sped%20up&t=1777931531956",
+  },
+  {
+    title: "Brainrot clip 8",
+    url: "https://www.tiktok.com/@thatssickkasf/video/7593212463055637791?q=2016&t=1777931595321",
+
+      title: "Brainrot clip 8",
+      url: "https://www.tiktok.com/@mrsahuur/video/7620014749652208914?is_from_webapp=1&sender_device=pc"
+  },
+];
+
+const quiz = {
+  questions: [
+    {
+      question: "What's a childhood memory that shaped who you are today?",
+      options: ["A moment of comfort and safety", "An experience of joy and freedom", "A time of sweetness and innocence", "A memory of intensity and passion"],
+    },
+    {
+      question: "How do you heal from heartbreak or deep emotional pain?",
+      options: ["By seeking warmth and familiarity", "Through light-hearted distractions", "With something refreshing and new", "By indulging in intense experiences"],
+    },
+    {
+      question: "What's your deepest fear in love and relationships?",
+      options: ["Being alone forever", "Losing your sense of self", "Being hurt again", "Not finding true passion"],
+    },
+  ],
+  cupcakes: [
+    { name: "Chocolate", image: "https://images.unsplash.com/photo-1606312619070-d48b4c652a52?w=200&h=200&fit=crop" },
+    { name: "Vanilla", image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop" },
+    { name: "Strawberry", image: "https://images.unsplash.com/photo-1550617931-90e9e8c5733a?w=200&h=200&fit=crop" },
+    { name: "Red Velvet", image: "https://images.unsplash.com/photo-1614707267537-2d89803d3d6e?w=200&h=200&fit=crop" },
+    { name: "Lemon", image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=200&h=200&fit=crop" },
+    { name: "Carrot", image: "https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=200&h=200&fit=crop" },
+    { name: "Blueberry", image: "https://images.unsplash.com/photo-1553909489-cd47e9adb6b9?w=200&h=200&fit=crop" },
+    { name: "Rainbow", image: "https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=200&h=200&fit=crop" },
+  ],
+};
+
 const panicResponses = [
   "OK OK FINE. Step 1: Open the document. Step 2: Write your name on it. Congrats, you're basically done. Take a break. 📝",
   "ALRIGHT here's the plan: panic for 10 minutes, cry a little, then write the whole thing in a caffeine-fueled frenzy. Works every time. ☕",
@@ -75,23 +140,66 @@ export default function Home() {
   const [response, setResponse] = useState("");
   const [personality, setPersonality] = useState("devil");
   const [loading, setLoading] = useState(false);
-  const [streak, setStreak] = useState(0);
+  const [streak, setStreak] = useState(() => parseInt(localStorage.getItem("procrastination-streak") || "0"));
   const [milestone, setMilestone] = useState("");
-  const [productivityScore, setProductivityScore] = useState(92);
+  const [productivityScore, setProductivityScore] = useState(() => Math.floor(Math.random() * 15) + 85);
   const [snoozeCount, setSnoozeCount] = useState(0);
   const [snoozeText, setSnoozeText] = useState("");
   const [rouletteResult, setRouletteResult] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
   const [panicActive, setPanicActive] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showWellnessVideo, setShowWellnessVideo] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [quizResult, setQuizResult] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiItems, setConfettiItems] = useState([]);
   const rouletteRef = useRef(null);
+  const [doomscrollIndex, setDoomscrollIndex] = useState(0);
+  const doomscrollRef = useRef(null);
 
   useEffect(() => {
-    setProductivityScore(Math.floor(Math.random() * 15) + 85);
-    const saved = localStorage.getItem("procrastination-streak");
-    if (saved) setStreak(parseInt(saved));
+    const handleMessage = (event) => {
+      console.log('Message received:', event.data);
+      if (event.data && (event.data.event === 'end' || event.data === 'ended' || event.data.event === 'onEnd')) {
+        setDoomscrollIndex((prev) => (prev + 1) % brainrotVideos.length);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  useEffect(() => {
+    if (showConfetti) {
+      const items = [...Array(50)].map((_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        top: `-${Math.random() * 20}%`,
+        fontSize: `${Math.random() * 20 + 10}px`,
+        delay: `${Math.random() * 2}s`,
+        duration: `${Math.random() * 3 + 2}s`,
+        emoji: ["🎉", "🎊", "⭐", "🦥", "✨"][Math.floor(Math.random() * 5)],
+      }));
+      setConfettiItems(items);
+    } else {
+      setConfettiItems([]);
+    }
+  }, [showConfetti]);
+
+  useEffect(() => {
+    if (showWellnessVideo) {
+      const timer = setTimeout(() => setShowWellnessVideo(false), 6000); // 6 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [showWellnessVideo]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDoomscrollIndex((prev) => (prev + 1) % brainrotVideos.length);
+    }, 45000); // 45 seconds
+    return () => clearTimeout(timer);
+  }, [doomscrollIndex]);
 
   const triggerConfetti = () => {
     setShowConfetti(true);
@@ -174,32 +282,52 @@ export default function Home() {
     }, 100);
   };
 
-  const handleShare = () => {
-    if (!response) return;
-    const shareText = `🦥 The Procrastination Enabler Bot says:\n\n"${response}"\n\nMy productivity score: ${productivityScore}% | Streak: ${streak} tasks avoided`;
-    navigator.clipboard.writeText(shareText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleQuizStart = () => {
+    setShowQuiz(true);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setQuizResult("");
   };
 
+  const handleQuizAnswer = (answerIndex) => {
+    const newAnswers = [...answers, answerIndex];
+    setAnswers(newAnswers);
+    if (currentQuestion < quiz.questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      const randomCupcake = quiz.cupcakes[Math.floor(Math.random() * quiz.cupcakes.length)];
+      setQuizResult(randomCupcake);
+    }
+  };
+
+  const handleQuizClose = () => {
+    setShowQuiz(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setQuizResult("");
+  };
+
+  const currentVideo = brainrotVideos[doomscrollIndex];
+  const currentVideoId = currentVideo.url.split("/video/")[1]?.split("?")[0] ?? "";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a2e] via-[#1a1045] to-[#0d0d2b] text-white flex flex-col items-center px-4 py-10 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a2e] text-white flex flex-col items-center px-4 py-10 relative overflow-hidden" style={{fontFamily: 'Papyrus, serif'}}>
       {/* Confetti */}
       {showConfetti && (
         <div className="fixed inset-0 pointer-events-none z-50">
-          {[...Array(50)].map((_, i) => (
+          {confettiItems.map((item) => (
             <div
-              key={i}
+              key={item.id}
               className="absolute animate-bounce"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `-${Math.random() * 20}%`,
-                fontSize: `${Math.random() * 20 + 10}px`,
-                animationDelay: `${Math.random() * 2}s`,
-                animationDuration: `${Math.random() * 3 + 2}s`,
+                left: item.left,
+                top: item.top,
+                fontSize: item.fontSize,
+                animationDelay: item.delay,
+                animationDuration: item.duration,
               }}
             >
-              {["🎉", "🎊", "⭐", "🦥", "✨"][Math.floor(Math.random() * 5)]}
+              {item.emoji}
             </div>
           ))}
         </div>
@@ -208,28 +336,17 @@ export default function Home() {
       {/* Header */}
       <div className="text-center mb-10">
         <h1 className="text-4xl sm:text-5xl font-bold mb-2">
-          🦥 Procrastination Enabler Bot
+          🦥 Procrastinationator
         </h1>
-        <p className="text-lg text-purple-300">
-          Your productivity&apos;s worst nightmare
-        </p>
       </div>
 
       {/* Stats Bar */}
       <div className="flex gap-6 mb-8">
         <div className="bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-center">
-          <p className="text-sm text-purple-300">🔥 Streak</p>
-          <p className="text-2xl font-bold">{streak}</p>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-center">
-          <p className="text-sm text-purple-300">📊 Productivity</p>
+          <p className="text-sm text-purple-300">� Productivity</p>
           <p className="text-2xl font-bold text-green-400">
             {productivityScore}%
           </p>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-xl px-5 py-3 text-center">
-          <p className="text-sm text-purple-300">😴 Snoozes</p>
-          <p className="text-2xl font-bold text-orange-400">{snoozeCount}</p>
         </div>
       </div>
 
@@ -240,139 +357,105 @@ export default function Home() {
         </div>
       )}
 
-      {/* Personality Selector */}
-      <div className="flex flex-wrap justify-center gap-3 mb-8">
-        {personalities.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => setPersonality(p.id)}
-            className={`px-4 py-3 rounded-xl border transition-all cursor-pointer ${
-              personality === p.id
-                ? "bg-purple-600 border-purple-400 glow-pulse"
-                : "bg-white/5 border-white/10 hover:bg-white/10"
-            }`}
-          >
-            <span className="text-xl">{p.emoji}</span>
-            <p className="text-sm mt-1">{p.name}</p>
-          </button>
-        ))}
-      </div>
+      {/* Wellness Guru Button */}
+      <button
+        onClick={() => setShowWellnessVideo(true)}
+        className="px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-500 transition-all cursor-pointer mb-8"
+      >
+        🧘 Wellness Guru
+      </button>
 
-      {/* Input Form */}
-      <form onSubmit={handleSubmit} className="w-full max-w-2xl mb-8">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-            placeholder='What should you be doing right now? (Type "HELP" for panic mode)'
-            className="flex-1 px-5 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 text-lg"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-8 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-yellow-500 text-black font-bold text-lg hover:from-orange-400 hover:to-yellow-400 transition-all disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? "Enabling..." : "🦥 Enable Me"}
-          </button>
-        </div>
-      </form>
-
-      {/* Response Card */}
-      {(response || loading) && (
-        <div className="fade-in w-full max-w-2xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">
-                {panicActive
-                  ? "🚨"
-                  : personalities.find((p) => p.id === personality)?.emoji}
-              </span>
-              <span className="text-sm text-purple-300 font-medium">
-                {panicActive
-                  ? "PANIC MODE"
-                  : personalities.find((p) => p.id === personality)?.name}
-              </span>
-            </div>
-            {response && !loading && (
-              <button
-                onClick={handleShare}
-                className="text-sm px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20 transition-all cursor-pointer"
-              >
-                {copied ? "✅ Copied!" : "📋 Share"}
-              </button>
-            )}
-          </div>
-          {loading ? (
-            <div className="flex items-center gap-2 text-white/50">
-              <div className="animate-spin h-4 w-4 border-2 border-purple-400 border-t-transparent rounded-full"></div>
-              <span>Crafting your excuse...</span>
-            </div>
-          ) : (
-            <p
-              className={`text-lg leading-relaxed ${
-                panicActive ? "text-red-300" : ""
-              }`}
-            >
-              {response}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Action Buttons Row */}
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mb-8">
-        {/* Snooze Button */}
-        <button
-          onClick={handleSnooze}
-          className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-lg hover:from-red-500 hover:to-red-400 transition-all active:scale-95 cursor-pointer"
-        >
-          😴 Snooze Responsibilities
-        </button>
-
-        {/* Roulette Button */}
-        <button
-          onClick={handleRoulette}
-          disabled={isSpinning}
-          className="flex-1 px-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold text-lg hover:from-emerald-500 hover:to-teal-400 transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
-        >
-          {isSpinning ? "🌀 Spinning..." : "🎰 Distraction Roulette"}
-        </button>
-      </div>
-
-      {/* Snooze Result */}
-      {snoozeText && (
-        <div className="fade-in w-full max-w-2xl bg-red-500/10 border border-red-500/30 rounded-2xl p-5 mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-red-300 font-medium">
-              😴 Snooze says:
-            </span>
-          </div>
-          <p className="text-lg">{snoozeText}</p>
-        </div>
-      )}
-
-      {/* Roulette Result */}
-      {rouletteResult && (
-        <div
-          ref={rouletteRef}
-          className={`fade-in w-full max-w-2xl bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-5 mb-6 ${
-            isSpinning ? "animate-pulse" : ""
-          }`}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-emerald-300 font-medium">
-              🎰 You should:
-            </span>
-          </div>
-          <p className="text-lg">{rouletteResult}</p>
-        </div>
-      )}
+      {/* Press Me Button */}
+      <button
+        onClick={handleQuizStart}
+        className="px-8 py-8 rounded-full bg-red-600 text-white font-bold hover:bg-red-500 transition-all cursor-pointer mb-8 shadow-lg hover:shadow-xl transform hover:scale-105"
+      >
+        Press Me
+      </button>
 
       {/* Footer */}
       <p className="mt-12 text-white/20 text-sm">
-        Built for absolutely no productive reason whatsoever
+        meow
       </p>
+
+      {/* Wellness Video Overlay */}
+      {showWellnessVideo && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+          <iframe
+            src="https://www.youtube.com/embed/EBYJgT8LFYk?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1"
+            width="300"
+            height="533"
+            frameBorder="0"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            className="rounded-lg"
+          />
+        </div>
+      )}
+
+      {/* Quiz Overlay */}
+      {showQuiz && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+            {!quizResult ? (
+              <>
+                <h2 className="text-2xl font-bold mb-6 text-black">What Cupcake Are You? 🧁</h2>
+                <p className="text-lg mb-6 text-black">{quiz.questions[currentQuestion].question}</p>
+                <div className="space-y-3">
+                  {quiz.questions[currentQuestion].options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuizAnswer(index)}
+                      className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-500 transition-all"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-6 text-black">Quiz Complete!</h2>
+                <div className="text-center mb-6">
+                  <img src={quizResult.image} alt={quizResult.name} className="w-32 h-32 rounded-full mx-auto mb-4" />
+                  <p className="text-lg text-black">You are a <strong>{quizResult.name}</strong> cupcake! 🧁</p>
+                </div>
+                <button
+                  onClick={handleQuizClose}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-all"
+                >
+                  Close
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Doomscroll Corner */}
+      <div
+        ref={doomscrollRef}
+        className="fixed bottom-4 left-4 w-48 bg-black rounded-none overflow-hidden shadow-2xl flex flex-col"
+      >
+        <div className="relative w-full bg-black flex items-center justify-center" style={{ aspectRatio: "9 / 16", minHeight: "150px" }}>
+          <iframe
+            key={doomscrollIndex}
+            src={`https://www.tiktok.com/embed/v2/${currentVideoId}?autoplay=1&muted=1&playsinline=1`}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        </div>
+        <div className="bg-gray-700 h-1 w-full">
+          <div
+            className="bg-pink-500 h-full transition-all"
+            style={{ width: `${((doomscrollIndex + 1) / brainrotVideos.length) * 100}%` }}
+          ></div>
+        </div>
+      </div>
     </div>
   );
 }
